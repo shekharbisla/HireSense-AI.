@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, current_app
-from ..services.resume import extract_skills
+from ..services.resume import extract_skills, parse_resume_structured
 from ..services.matcher import match_jobs
 
 api_bp = Blueprint("api", __name__)
@@ -10,9 +10,16 @@ def api_match():
     resume_text = (data.get("resume") or "").strip()
     if not resume_text:
         return jsonify({"error": "resume text required"}), 400
-
     skills = extract_skills(resume_text)
     results = match_jobs(skills)
-
     current_app.logger.info("skills=%s, results=%d", skills, len(results))
     return jsonify({"skills": skills, "results": results}), 200
+
+@api_bp.post("/parse")
+def api_parse():
+    data = request.get_json(silent=True) or {}
+    resume_text = (data.get("resume") or "").strip()
+    if not resume_text:
+        return jsonify({"error": "resume text required"}), 400
+    parsed = parse_resume_structured(resume_text)
+    return jsonify(parsed), 200
