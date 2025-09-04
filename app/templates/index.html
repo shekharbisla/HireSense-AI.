@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HireSense AI — Find Fast. Hire Smart.</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>HireSense <span class="ai">AI</span></h1>
+    <p class="tagline">Find Fast. Hire Smart.</p>
+
+    <section class="card">
+      <h2>Paste your resume</h2>
+      <textarea id="resume" rows="10" placeholder="Paste your resume text here..."></textarea>
+      <button id="matchBtn">Find Matching Jobs</button>
+      <p class="hint">Tip: Add skills like python, flask, sql, excel, javascript, react, ml, nlp...</p>
+    </section>
+
+    <section id="skills" class="card" hidden>
+      <h3>Extracted Skills</h3>
+      <div id="skillsList"></div>
+    </section>
+
+    <section id="results" class="card" hidden>
+      <h3>Matching Jobs</h3>
+      <div id="jobs"></div>
+    </section>
+  </main>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    $("#matchBtn").addEventListener("click", async () => {
+      const resume = $("#resume").value.trim();
+      if(!resume){ alert("Please paste some resume text first."); return; }
+
+      const btn = $("#matchBtn");
+      btn.disabled = true; btn.innerText = "Finding…";
+
+      const res = await fetch("/api/match", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ resume })
+      });
+      const data = await res.json();
+
+      $("#skills").hidden = false;
+      $("#skillsList").innerHTML = (data.skills||[])
+        .map(s => `<span class="chip">${s}</span>`).join(" ") || "<em>No skills detected</em>";
+
+      $("#results").hidden = false;
+      const jobs = data.results || [];
+      $("#jobs").innerHTML = jobs.length ? jobs.map(j => `
+        <div class="job">
+          <div class="title">${j.title} <span class="score">${j.score}% match</span></div>
+          <div class="meta">${j.company} • ${j.location} • ${j.type}</div>
+          <div class="skills">
+            Needs: ${j.skills.map(s=>`<span class="chip">${s}</span>`).join(" ")}<br>
+            You match: ${j.matched_skills.map(s=>`<span class="chip good">${s}</span>`).join(" ")}
+          </div>
+        </div>`).join("") : "<p><em>No matches yet.</em></p>";
+
+      btn.disabled = false; btn.innerText = "Find Matching Jobs";
+    });
+  </script>
+</body>
+</html>
