@@ -7,10 +7,10 @@ api_bp = Blueprint("api", __name__)
 @api_bp.post("/match")
 def api_match():
     data = request.get_json(silent=True) or {}
-    resume_text = (data.get("resume") or "").strip()
-    if not resume_text:
+    resume = (data.get("resume") or "").strip()
+    if not resume:
         return jsonify({"error": "resume text required"}), 400
-    skills = extract_skills(resume_text)
+    skills = extract_skills(resume)
     results = match_jobs(skills)
     current_app.logger.info("skills=%s, results=%d", skills, len(results))
     return jsonify({"skills": skills, "results": results}), 200
@@ -18,8 +18,7 @@ def api_match():
 @api_bp.post("/parse")
 def api_parse():
     data = request.get_json(silent=True) or {}
-    resume_text = (data.get("resume") or "").strip()
-    if not resume_text:
+    resume = (data.get("resume") or "").strip()
+    if not resume:
         return jsonify({"error": "resume text required"}), 400
-    parsed = parse_resume_structured(resume_text)
-    return jsonify(parsed), 200
+    return jsonify(parse_resume_structured(resume)), 200
