@@ -1,30 +1,39 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>HireSense AI — Find Fast. Hire Smart.</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <main class="container">
-    <h1>HireSense <span class="ai">AI</span></h1>
-    <p class="tagline">Find Fast. Hire Smart.</p>
+    <header class="hero">
+      <h1>HireSense <span class="ai">AI</span></h1>
+      <p class="tagline">Find Fast. Hire Smart.</p>
+    </header>
 
-    <section class="card">
-      <h2>Paste your resume</h2>
-      <textarea id="resume" rows="10" placeholder="Paste your resume text here..."></textarea>
-      <button id="matchBtn">Find Matching Jobs</button>
-      <button id="parseBtn" style="margin-left:8px;">Parse Resume (AI)</button>
-      <p class="hint">Tip: Add skills like python, flask, sql, excel, javascript, react, ml, nlp...</p>
+    <section class="card" aria-labelledby="resume-label">
+      <h2 id="resume-label">Paste your resume</h2>
+      <label for="resume" class="sr-only">Resume text</label>
+      <textarea id="resume" rows="10" placeholder="Paste your resume text here..." autofocus></textarea>
+
+      <div class="actions">
+        <button id="matchBtn" class="btn primary">Find Matching Jobs</button>
+        <button id="parseBtn" class="btn secondary">Parse Resume (AI)</button>
+      </div>
+
+      <p class="hint">
+        Tip: Add skills like python, flask, sql, excel, javascript, react, ml, nlp...
+      </p>
     </section>
 
-    <section id="skills" class="card" hidden>
+    <section id="skills" class="card" hidden aria-live="polite">
       <h3>Extracted Skills</h3>
       <div id="skillsList"></div>
     </section>
 
-    <section id="results" class="card" hidden>
+    <section id="results" class="card" hidden aria-live="polite">
       <h3>Matching Jobs</h3>
       <div id="jobs"></div>
     </section>
@@ -32,57 +41,76 @@
 
   <script>
     const $ = s => document.querySelector(s);
+
+    // ---- Match Jobs ----
     $("#matchBtn").addEventListener("click", async () => {
       const resume = $("#resume").value.trim();
-      if(!resume){ alert("Please paste some resume text first."); return; }
-
-      const btn = $("#matchBtn");
-      btn.disabled = true; btn.innerText = "Finding…";
-
-      const res = await fetch("/api/match", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ resume })
-      });
-      const data = await res.json();
-
-      $("#skills").hidden = false;
-      $("#skillsList").innerHTML = (data.skills||[])
-        .map(s => `<span class="chip">${s}</span>`).join(" ") || "<em>No skills detected</em>";
-
-      $("#results").hidden = false;
-      const jobs = data.results || [];
-      $("#jobs").innerHTML = jobs.length ? jobs.map(j => `
-        <div class="job">
-          <div class="title">${j.title} <span class="score">${j.score}% match</span></div>
-          <div class="meta">${j.company} • ${j.location} • ${j.type}</div>
-          <div class="skills">
-            Needs: ${j.skills.map(s=>`<span class="chip">${s}</span>`).join(" ")}<br>
-            You match: ${j.matched_skills.map(s=>`<span class="chip good">${s}</span>`).join(" ")}
-          </div>
-        </div>`).join("") : "<p><em>No matches yet.</em></p>";
-
-      btn.disabled = false; btn.innerText = "Find Matching Jobs";
-    });
-
-    // ---- NEW: Parse Resume (AI) quick test ----
-    document.getElementById('parseBtn').addEventListener('click', async () => {
-      const resume = document.getElementById('resume').value.trim();
       if (!resume) { alert("Please paste some resume text first."); return; }
 
-      const res = await fetch("/api/parse", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ resume })
-      });
-      const data = await res.json();
+      const btn = $("#matchBtn");
+      btn.disabled = true; btn.textContent = "Finding…";
 
-      alert(
-        `Name: ${data.name || '-'}\n` +
-        `Email: ${data.email || '-'}\n` +
-        `Phones: ${(data.phones||[]).join(', ') || '-'}\n` +
-        `Skills: ${(data.skills||[]).join(', ')}`
-      );
+      try {
+        const res = await fetch("/api/match", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ resume })
+        });
+        const data = await res.json();
+
+        $("#skills").hidden = false;
+        $("#skillsList").innerHTML =
+          (data.skills || []).map(s => `<span class="chip">${s}</span>`).join(" ")
+          || "<em>No skills detected</em>";
+
+        $("#results").hidden = false;
+        const jobs = data.results || [];
+        $("#jobs").innerHTML = jobs.length
+          ? jobs.map(j => `
+              <div class="job">
+                <div class="title">
+                  ${j.title}
+                  <span class="score">${j.score}% match</span>
+                </div>
+                <div class="meta">${j.company} • ${j.location} • ${j.type}</div>
+                <div class="skills">
+                  Needs: ${j.skills.map(s=>`<span class="chip">${s}</span>`).join(" ")}<br>
+                  You match: ${j.matched_skills.map(s=>`<span class="chip good">${s}</span>`).join(" ")}
+                </div>
+              </div>
+            `).join("")
+          : "<p><em>No matches yet.</em></p>";
+      } catch (e) {
+        alert("Something went wrong. Please try again.");
+        console.error(e);
+      } finally {
+        btn.disabled = false; btn.textContent = "Find Matching Jobs";
+      }
+    });
+
+    // ---- Parse Resume (AI) ----
+    $("#parseBtn").addEventListener("click", async () => {
+      const resume = $("#resume").value.trim();
+      if (!resume) { alert("Please paste some resume text first."); return; }
+
+      try {
+        const res = await fetch("/api/parse", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ resume })
+        });
+        const data = await res.json();
+
+        alert(
+          `Name: ${data.name || '-'}\n` +
+          `Email: ${data.email || '-'}\n` +
+          `Phones: ${(data.phones||[]).join(', ') || '-'}\n` +
+          `Skills: ${(data.skills||[]).join(', ')}`
+        );
+      } catch (e) {
+        alert("Parser error. Please try again.");
+        console.error(e);
+      }
     });
   </script>
 </body>
