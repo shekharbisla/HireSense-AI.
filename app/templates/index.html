@@ -15,6 +15,7 @@
       <h2>Paste your resume</h2>
       <textarea id="resume" rows="10" placeholder="Paste your resume text here..."></textarea>
       <button id="matchBtn">Find Matching Jobs</button>
+      <button id="parseBtn" style="margin-left:8px;">Parse Resume (AI)</button>
       <p class="hint">Tip: Add skills like python, flask, sql, excel, javascript, react, ml, nlp...</p>
     </section>
 
@@ -62,6 +63,26 @@
         </div>`).join("") : "<p><em>No matches yet.</em></p>";
 
       btn.disabled = false; btn.innerText = "Find Matching Jobs";
+    });
+
+    // ---- NEW: Parse Resume (AI) quick test ----
+    document.getElementById('parseBtn').addEventListener('click', async () => {
+      const resume = document.getElementById('resume').value.trim();
+      if (!resume) { alert("Please paste some resume text first."); return; }
+
+      const res = await fetch("/api/parse", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ resume })
+      });
+      const data = await res.json();
+
+      alert(
+        `Name: ${data.name || '-'}\n` +
+        `Email: ${data.email || '-'}\n` +
+        `Phones: ${(data.phones||[]).join(', ') || '-'}\n` +
+        `Skills: ${(data.skills||[]).join(', ')}`
+      );
     });
   </script>
 </body>
