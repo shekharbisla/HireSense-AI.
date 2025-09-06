@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block content %}
+<article style="background:#fff;padding:20px;border-radius:8px;box-shadow:0 6px 18px rgba(12,20,40,0.04);">
+  <h2>About HireSense AI</h2>
+
+  <p style="color:#555">
+    <strong>HireSense AI</strong> — Find Fast. Hire Smart.<br>
+    A lightweight AI-powered assistant to parse resumes, extract skills, and suggest matching jobs across government, private and international listings.
+  </p>
+
+  <h3>Who we are</h3>
+  <p>We are a small team building tools to help students and young professionals navigate the job market faster — combining NLP resume parsing with job-matching logic.</p>
+
+  <h3>Contact</h3>
+  <p>If you need help, feedback, or want to collaborate, open an issue on the GitHub repo or contact the project owner listed in the README.</p>
+
+  <h3>Version</h3>
+  <p style="font-weight:600">v1.0.0</p>
+
+  <p style="margin-top:12px;color:#777;font-size:13px;">© {{ year if year else "2025" }} HireSense AI</p>
+</article>
+{% endblock %}
