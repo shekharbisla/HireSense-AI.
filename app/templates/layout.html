@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HireSense AI — Find Fast. Hire Smart.</title>
+  <!-- existing css file (if present) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header style="background:#0b1220;color:#fff;padding:14px 0;">
+    <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 12px;">
+      <a href="{{ url_for('main.index') }}" style="text-decoration:none;color:inherit;">
+        <h1 style="margin:0;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+          HireSense <span style="color:#7c5cff">AI</span>
+        </h1>
+      </a>
+      <nav>
+        <a href="{{ url_for('main.index') }}" style="color:#dfe7ff;margin-right:12px;text-decoration:none;">Home</a>
+        <a href="{{ url_for('main.how_to_use') }}" style="color:#dfe7ff;margin-right:12px;text-decoration:none;">How to use</a>
+        <a href="{{ url_for('main.terms') }}" style="color:#dfe7ff;margin-right:12px;text-decoration:none;">Terms</a>
+        <a href="{{ url_for('main.about') }}" style="color:#dfe7ff;text-decoration:none;">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main style="max-width:1100px;margin:24px auto;padding:0 12px;">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer style="border-top:1px solid #eee;padding:18px 0;margin-top:36px;background:#fbfbfc">
+    <div style="max-width:1100px;margin:0 auto;padding:0 12px;color:#333;font-size:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>© {{ year if year else "2025" }} HireSense AI</div>
+        <div style="opacity:.8">Built with care • <a href="{{ url_for('main.terms') }}">Terms</a></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- optional small script include (we'll add real app.js later) -->
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
